@@ -1,0 +1,71 @@
+```{r}
+# Init Block
+library(tidyverse)
+library(sf)
+
+# 1. Load your rodent data (the file you uploaded)
+rodent_stats <- read_csv("district_level_expanded.csv")
+
+# 2. Load the geometry CSV you got from NYC Open Data
+# Assume it is named 'Council_Districts.csv'
+geo_raw <- read_csv("district_shapes.csv")
+
+# 3. Convert the geometry CSV to a spatial object (sf)
+# 'the_geom' is the standard WKT column name from NYC Open Data
+districts_geo <- st_as_sf(geo_raw, wkt = "the_geom", crs = 4326)
+
+# 4. Join them together
+# We match 'CounDist' from the map to 'Council District' from your data
+final_map_data <- districts_geo %>%
+  left_join(rodent_stats, by = c("CounDist" = "Council District"))
+
+# 5. Verify the join
+# Now you can plot any variable from your CSV, like 'total_calls'
+plot(final_map_data["total_calls"])
+```
+
+
+```{r}
+## Plot of total vals
+library(viridis)
+p1 <- final_map_data |> 
+    ggplot() +
+    geom_sf(aes(fill=confirmed_calls)) +
+    scale_fill_viridis() +
+    labs(title="Number of Confirmed Rodent Calls in 2024") +
+    theme_bw()
+
+p2 <- final_map_data |> 
+    ggplot() +
+    geom_sf(aes(fill=total_calls)) +
+    scale_fill_viridis() +
+    labs(title="Number of 
+    Total Rodent Calls in 2024") +
+    theme_bw()
+
+library(patchwork)
+
+p1+p2
+```
+
+
+```{r}
+## Plot of rates
+p1 <- final_map_data |> 
+    ggplot() +
+    geom_sf(aes(fill=confirmed_rate_per_1000)) +
+    geom_sf_label(aes(label=CounDist), size=2.5)+
+    scale_fill_viridis() +
+    labs(title="Confirmed Rodent Call Rate") +
+    theme_bw()
+
+p2 <- final_map_data |> 
+    ggplot() +
+    geom_sf(aes(fill=report_rate_per_1000)) +
+        geom_sf_label(aes(label=CounDist), size=2.5)+
+    scale_fill_viridis() +
+    labs(title="Total Rodent Call Rate") +
+    theme_bw()
+
+p1+p2
+```

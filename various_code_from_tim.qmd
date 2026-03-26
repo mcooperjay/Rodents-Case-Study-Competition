@@ -144,6 +144,7 @@ jdf |>
 
 
 ```{r}
+library(tidyverse)
 library(sf)
 library(dplyr)
 library(readr)
